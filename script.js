@@ -18,11 +18,12 @@ const gameState = {
   lastTime: 0,
   countdown: 0,
   countdownTime: 0,
+  leaderboardEntries: [],
 };
 
 const COUNTDOWN_STEP = 0.33;
-const LEADERBOARD_KEY = "flappy-cheems-leaderboard";
 const LEADERBOARD_LIMIT = 5;
+const LEADERBOARD_ENDPOINT = window.LEADERBOARD_ENDPOINT || "/api/leaderboard";
 
 const world = {
   gravity: 1800,
@@ -65,21 +66,39 @@ flapSound.preload = "auto";
 const crashSound = new Audio("assets/crash.wav");
 crashSound.preload = "auto";
 
-const getLeaderboard = () => {
+const fetchLeaderboard = async () => {
   try {
-    const stored = JSON.parse(localStorage.getItem(LEADERBOARD_KEY));
-    return Array.isArray(stored) ? stored : [];
+    const response = await fetch(LEADERBOARD_ENDPOINT, {
+      headers: { Accept: "application/json" },
+    });
+    if (!response.ok) {
+      throw new Error("Failed to fetch leaderboard");
+    }
+    const data = await response.json();
+    return Array.isArray(data) ? data : [];
   } catch (error) {
     return [];
   }
 };
 
-const saveLeaderboard = (entries) => {
-  localStorage.setItem(LEADERBOARD_KEY, JSON.stringify(entries));
+const submitLeaderboardEntry = async (entry) => {
+  try {
+    const response = await fetch(LEADERBOARD_ENDPOINT, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(entry),
+    });
+    if (!response.ok) {
+      throw new Error("Failed to submit leaderboard entry");
+    }
+    const data = await response.json();
+    return Array.isArray(data) ? data : [];
+  } catch (error) {
+    return null;
+  }
 };
 
-const renderLeaderboard = () => {
-  const entries = getLeaderboard();
+const renderLeaderboard = (entries = gameState.leaderboardEntries) => {
   leaderboardList.innerHTML = "";
   if (entries.length === 0) {
     const emptyItem = document.createElement("li");
@@ -99,7 +118,7 @@ const renderLeaderboard = () => {
 };
 
 const qualifiesForLeaderboard = (score) => {
-  const entries = getLeaderboard();
+  const entries = gameState.leaderboardEntries;
   if (entries.length < LEADERBOARD_LIMIT) {
     return true;
   }
@@ -117,6 +136,12 @@ const showLeaderboardForm = (show) => {
     leaderboardForm.classList.remove("leaderboard-form--visible");
     overlayButton.disabled = false;
   }
+};
+
+const updateLeaderboard = async () => {
+  const entries = await fetchLeaderboard();
+  gameState.leaderboardEntries = entries;
+  renderLeaderboard(entries);
 };
 
 const buildPlaceholderSprite = () => {
@@ -465,18 +490,23 @@ overlayButton.addEventListener("click", () => {
   startGame();
 });
 
-leaderboardForm.addEventListener("submit", (event) => {
+leaderboardForm.addEventListener("submit", async (event) => {
   event.preventDefault();
   const name = playerNameInput.value.replace(/\s+/g, "").trim().slice(0, 10);
   if (!name) {
     return;
   }
-  const entries = getLeaderboard();
-  entries.push({ name, score: gameState.score });
-  entries.sort((a, b) => b.score - a.score);
-  const trimmed = entries.slice(0, LEADERBOARD_LIMIT);
-  saveLeaderboard(trimmed);
-  renderLeaderboard();
+  const updatedEntries = await submitLeaderboardEntry({
+    name,
+    score: gameState.score,
+  });
+  if (!updatedEntries) {
+    return;
+  }
+  gameState.leaderboardEntries = updatedEntries
+    .sort((a, b) => b.score - a.score)
+    .slice(0, LEADERBOARD_LIMIT);
+  renderLeaderboard(gameState.leaderboardEntries);
   showLeaderboardForm(false);
 });
 
@@ -498,4 +528,4 @@ canvas.addEventListener("pointerdown", handleInput);
 
 resetGame();
 draw();
-renderLeaderboard();
+updateLeaderboard();
