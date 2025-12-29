@@ -13,6 +13,8 @@ const gameState = {
   score: 0,
   highScore: 0,
   lastTime: 0,
+  countdown: 0,
+  countdownTime: 0,
 };
 
 const world = {
@@ -105,6 +107,8 @@ const resetGame = () => {
   gameState.gameOver = false;
   gameState.score = 0;
   gameState.lastTime = 0;
+  gameState.countdown = 0;
+  gameState.countdownTime = 0;
   bird.y = canvas.height / 2;
   bird.velocity = 0;
   bird.rotation = 0;
@@ -157,6 +161,8 @@ const startGame = () => {
     gameState.started = true;
     gameState.gameOver = false;
     gameState.lastTime = performance.now();
+    gameState.countdown = 3;
+    gameState.countdownTime = 0;
     hideOverlay();
     animationFrameId = requestAnimationFrame(loop);
   }
@@ -165,6 +171,8 @@ const startGame = () => {
 const endGame = () => {
   gameState.running = false;
   gameState.gameOver = true;
+  gameState.countdown = 0;
+  gameState.countdownTime = 0;
   gameState.highScore = Math.max(gameState.highScore, gameState.score);
   updateOverlay(
     "Game Over",
@@ -195,11 +203,22 @@ const handleInput = (event) => {
     resetGame();
     startGame();
   } else {
+    if (gameState.started && gameState.countdown > 0) {
+      return;
+    }
     flap();
   }
 };
 
 const update = (deltaSeconds) => {
+  if (gameState.running && gameState.countdown > 0) {
+    gameState.countdownTime += deltaSeconds;
+    if (gameState.countdownTime >= 1) {
+      gameState.countdownTime -= 1;
+      gameState.countdown -= 1;
+    }
+    return;
+  }
   bird.velocity += world.gravity * deltaSeconds;
   bird.y += bird.velocity * deltaSeconds;
   bird.rotation = Math.min(Math.max(bird.velocity / 600, -0.5), 1.1);
@@ -324,10 +343,26 @@ const drawBird = () => {
   ctx.restore();
 };
 
+const drawCountdown = () => {
+  if (!gameState.running || gameState.countdown <= 0) {
+    return;
+  }
+  ctx.save();
+  ctx.fillStyle = "#ffffff";
+  ctx.font = "bold 96px 'Nunito', 'Segoe UI', sans-serif";
+  ctx.textAlign = "center";
+  ctx.textBaseline = "middle";
+  ctx.shadowColor = "rgba(0, 0, 0, 0.35)";
+  ctx.shadowBlur = 12;
+  ctx.fillText(gameState.countdown.toString(), canvas.width / 2, canvas.height / 2);
+  ctx.restore();
+};
+
 const draw = () => {
   drawBackground();
   drawPipes();
   drawBird();
+  drawCountdown();
 };
 
 const loop = (timestamp) => {
