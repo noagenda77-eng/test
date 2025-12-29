@@ -55,6 +55,9 @@ const sprite = {
   displayHeight: Math.round(72 * (606 / 500)),
 };
 
+const flapSound = new Audio("assets/bonk.wav");
+flapSound.preload = "auto";
+
 const buildPlaceholderSprite = () => {
   const sheetCanvas = document.createElement("canvas");
   sheetCanvas.width = sprite.frameWidth * sprite.frameCount;
@@ -193,6 +196,8 @@ const flap = () => {
   }
   if (gameState.running) {
     bird.velocity = world.flapStrength;
+    flapSound.currentTime = 0;
+    flapSound.play();
   }
 };
 
