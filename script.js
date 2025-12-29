@@ -17,6 +17,8 @@ const gameState = {
   countdownTime: 0,
 };
 
+const COUNTDOWN_STEP = 0.33;
+
 const world = {
   gravity: 1800,
   flapStrength: -520,
@@ -213,8 +215,8 @@ const handleInput = (event) => {
 const update = (deltaSeconds) => {
   if (gameState.running && gameState.countdown > 0) {
     gameState.countdownTime += deltaSeconds;
-    if (gameState.countdownTime >= 1) {
-      gameState.countdownTime -= 1;
+    if (gameState.countdownTime >= COUNTDOWN_STEP) {
+      gameState.countdownTime -= COUNTDOWN_STEP;
       gameState.countdown -= 1;
     }
     return;
@@ -347,14 +349,23 @@ const drawCountdown = () => {
   if (!gameState.running || gameState.countdown <= 0) {
     return;
   }
+  const progress = Math.min(
+    gameState.countdownTime / COUNTDOWN_STEP,
+    1
+  );
+  const scale = 0.6 + progress * 0.7;
+  const alpha = Math.max(1 - progress, 0);
   ctx.save();
+  ctx.globalAlpha = alpha;
   ctx.fillStyle = "#ffffff";
   ctx.font = "bold 96px 'Nunito', 'Segoe UI', sans-serif";
   ctx.textAlign = "center";
   ctx.textBaseline = "middle";
   ctx.shadowColor = "rgba(0, 0, 0, 0.35)";
   ctx.shadowBlur = 12;
-  ctx.fillText(gameState.countdown.toString(), canvas.width / 2, canvas.height / 2);
+  ctx.translate(canvas.width / 2, canvas.height / 2);
+  ctx.scale(scale, scale);
+  ctx.fillText(gameState.countdown.toString(), 0, 0);
   ctx.restore();
 };
 
