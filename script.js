@@ -57,6 +57,8 @@ const sprite = {
 
 const flapSound = new Audio("assets/bonk.wav");
 flapSound.preload = "auto";
+const crashSound = new Audio("assets/crash.wav");
+crashSound.preload = "auto";
 
 const buildPlaceholderSprite = () => {
   const sheetCanvas = document.createElement("canvas");
@@ -174,10 +176,15 @@ const startGame = () => {
 };
 
 const endGame = () => {
+  if (gameState.gameOver) {
+    return;
+  }
   gameState.running = false;
   gameState.gameOver = true;
   gameState.countdown = 0;
   gameState.countdownTime = 0;
+  crashSound.currentTime = 0;
+  crashSound.play();
   gameState.highScore = Math.max(gameState.highScore, gameState.score);
   updateOverlay(
     "Game Over",
