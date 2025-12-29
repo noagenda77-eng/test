@@ -112,8 +112,10 @@ const showLeaderboardForm = (show) => {
     leaderboardForm.classList.add("leaderboard-form--visible");
     playerNameInput.value = "";
     playerNameInput.focus();
+    overlayButton.disabled = true;
   } else {
     leaderboardForm.classList.remove("leaderboard-form--visible");
+    overlayButton.disabled = false;
   }
 };
 
@@ -271,10 +273,10 @@ const handleInput = (event) => {
   if (event.type === "keydown" && event.code !== "Space") {
     return;
   }
-  event.preventDefault();
   if (gameState.gameOver) {
     return;
   }
+  event.preventDefault();
   if (gameState.started && gameState.countdown > 0) {
     return;
   }

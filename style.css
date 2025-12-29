@@ -197,6 +197,12 @@ canvas {
   box-shadow: 0 8px 18px rgba(246, 163, 25, 0.35);
 }
 
+.overlay__card button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
 .overlay__card button:hover {
   background: #f8b53b;
 }
