@@ -467,7 +467,7 @@ overlayButton.addEventListener("click", () => {
 
 leaderboardForm.addEventListener("submit", (event) => {
   event.preventDefault();
-  const name = playerNameInput.value.trim().slice(0, 10);
+  const name = playerNameInput.value.replace(/\s+/g, "").trim().slice(0, 10);
   if (!name) {
     return;
   }
@@ -478,6 +478,19 @@ leaderboardForm.addEventListener("submit", (event) => {
   saveLeaderboard(trimmed);
   renderLeaderboard();
   showLeaderboardForm(false);
+});
+
+playerNameInput.addEventListener("keydown", (event) => {
+  if (event.key === " ") {
+    event.preventDefault();
+  }
+});
+
+playerNameInput.addEventListener("input", () => {
+  const sanitized = playerNameInput.value.replace(/\s+/g, "");
+  if (sanitized !== playerNameInput.value) {
+    playerNameInput.value = sanitized;
+  }
 });
 
 document.addEventListener("keydown", handleInput);
