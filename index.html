@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Flappy Bird Clone</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <main class="page">
+      <header class="header">
+        <h1>Flappy Bird Clone</h1>
+        <p>Press <strong>Space</strong> or tap/click to flap.</p>
+      </header>
+      <section class="game-panel">
+        <canvas id="game" width="480" height="640"></canvas>
+        <div class="hud">
+          <span id="score">0</span>
+          <span class="hud__label">Score</span>
+        </div>
+        <div id="overlay" class="overlay overlay--visible">
+          <div class="overlay__card">
+            <h2 id="overlay-title">Ready?</h2>
+            <p id="overlay-message">Press Space or tap/click to start.</p>
+            <button id="overlay-button" type="button">Start</button>
+          </div>
+        </div>
+      </section>
+    </main>
+    <script src="script.js"></script>
+  </body>
+</html>
