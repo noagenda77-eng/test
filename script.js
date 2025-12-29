@@ -5,6 +5,9 @@ const overlay = document.getElementById("overlay");
 const overlayTitle = document.getElementById("overlay-title");
 const overlayMessage = document.getElementById("overlay-message");
 const overlayButton = document.getElementById("overlay-button");
+const leaderboardList = document.getElementById("leaderboard-list");
+const leaderboardForm = document.getElementById("leaderboard-form");
+const playerNameInput = document.getElementById("player-name");
 
 const gameState = {
   running: false,
@@ -18,6 +21,8 @@ const gameState = {
 };
 
 const COUNTDOWN_STEP = 0.33;
+const LEADERBOARD_KEY = "flappy-cheems-leaderboard";
+const LEADERBOARD_LIMIT = 5;
 
 const world = {
   gravity: 1800,
@@ -59,6 +64,58 @@ const flapSound = new Audio("assets/bonk.wav");
 flapSound.preload = "auto";
 const crashSound = new Audio("assets/crash.wav");
 crashSound.preload = "auto";
+
+const getLeaderboard = () => {
+  try {
+    const stored = JSON.parse(localStorage.getItem(LEADERBOARD_KEY));
+    return Array.isArray(stored) ? stored : [];
+  } catch (error) {
+    return [];
+  }
+};
+
+const saveLeaderboard = (entries) => {
+  localStorage.setItem(LEADERBOARD_KEY, JSON.stringify(entries));
+};
+
+const renderLeaderboard = () => {
+  const entries = getLeaderboard();
+  leaderboardList.innerHTML = "";
+  if (entries.length === 0) {
+    const emptyItem = document.createElement("li");
+    emptyItem.innerHTML = "<span>---</span><span>0</span>";
+    leaderboardList.append(emptyItem);
+    return;
+  }
+  entries.forEach((entry) => {
+    const item = document.createElement("li");
+    const name = document.createElement("span");
+    name.textContent = entry.name;
+    const score = document.createElement("span");
+    score.textContent = entry.score.toString();
+    item.append(name, score);
+    leaderboardList.append(item);
+  });
+};
+
+const qualifiesForLeaderboard = (score) => {
+  const entries = getLeaderboard();
+  if (entries.length < LEADERBOARD_LIMIT) {
+    return true;
+  }
+  const lowestScore = entries[entries.length - 1]?.score ?? 0;
+  return score > lowestScore;
+};
+
+const showLeaderboardForm = (show) => {
+  if (show) {
+    leaderboardForm.classList.add("leaderboard-form--visible");
+    playerNameInput.value = "";
+    playerNameInput.focus();
+  } else {
+    leaderboardForm.classList.remove("leaderboard-form--visible");
+  }
+};
 
 const buildPlaceholderSprite = () => {
   const sheetCanvas = document.createElement("canvas");
@@ -116,6 +173,7 @@ const resetGame = () => {
   gameState.lastTime = 0;
   gameState.countdown = 0;
   gameState.countdownTime = 0;
+  showLeaderboardForm(false);
   bird.y = canvas.height / 2;
   bird.velocity = 0;
   bird.rotation = 0;
@@ -186,6 +244,7 @@ const endGame = () => {
   crashSound.currentTime = 0;
   crashSound.play();
   gameState.highScore = Math.max(gameState.highScore, gameState.score);
+  showLeaderboardForm(qualifiesForLeaderboard(gameState.score));
   updateOverlay(
     "Game Over",
     `Score: ${gameState.score} · Best: ${gameState.highScore}`,
@@ -406,8 +465,24 @@ overlayButton.addEventListener("click", () => {
   startGame();
 });
 
+leaderboardForm.addEventListener("submit", (event) => {
+  event.preventDefault();
+  const name = playerNameInput.value.trim().slice(0, 10);
+  if (!name) {
+    return;
+  }
+  const entries = getLeaderboard();
+  entries.push({ name, score: gameState.score });
+  entries.sort((a, b) => b.score - a.score);
+  const trimmed = entries.slice(0, LEADERBOARD_LIMIT);
+  saveLeaderboard(trimmed);
+  renderLeaderboard();
+  showLeaderboardForm(false);
+});
+
 document.addEventListener("keydown", handleInput);
 canvas.addEventListener("pointerdown", handleInput);
 
 resetGame();
 draw();
+renderLeaderboard();

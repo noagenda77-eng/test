@@ -18,10 +18,26 @@
           <span id="score">0</span>
           <span class="hud__label">Score</span>
         </div>
+        <aside class="leaderboard">
+          <h2>Top 5</h2>
+          <ol id="leaderboard-list"></ol>
+        </aside>
         <div id="overlay" class="overlay overlay--visible">
           <div class="overlay__card">
             <h2 id="overlay-title">Ready?</h2>
             <p id="overlay-message">Press Space or tap/click to start.</p>
+            <form id="leaderboard-form" class="leaderboard-form">
+              <label for="player-name">Name</label>
+              <input
+                id="player-name"
+                name="player-name"
+                type="text"
+                maxlength="10"
+                autocomplete="off"
+                placeholder="Your name"
+              />
+              <button id="leaderboard-submit" type="submit">Save Score</button>
+            </form>
             <button id="overlay-button" type="button">Start</button>
           </div>
         </div>
