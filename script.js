@@ -273,14 +273,12 @@ const handleInput = (event) => {
   }
   event.preventDefault();
   if (gameState.gameOver) {
-    resetGame();
-    startGame();
-  } else {
-    if (gameState.started && gameState.countdown > 0) {
-      return;
-    }
-    flap();
+    return;
   }
+  if (gameState.started && gameState.countdown > 0) {
+    return;
+  }
+  flap();
 };
 
 const update = (deltaSeconds) => {
