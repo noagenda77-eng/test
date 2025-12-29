@@ -353,7 +353,7 @@ const drawCountdown = () => {
     gameState.countdownTime / COUNTDOWN_STEP,
     1
   );
-  const scale = 0.6 + progress * 0.7;
+  const scale = 0.6 + progress * 1.4;
   const alpha = Math.max(1 - progress, 0);
   ctx.save();
   ctx.globalAlpha = alpha;
